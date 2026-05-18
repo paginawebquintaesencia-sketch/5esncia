@@ -229,9 +229,6 @@ export default function Page() {
                   <Button variant="outline" onClick={loadProfiles}>
                     Actualizar lista
                   </Button>
-                  <Button variant="outline" asChild>
-                    <a href="/plataforma/ajustes">Ver mi rol</a>
-                  </Button>
                 </div>
 
                 {actionMessage ? (

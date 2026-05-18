@@ -105,7 +105,7 @@ export default function Page() {
             </CardHeader>
             <CardContent>
               <Button variant="outline" asChild>
-                <a href="/plataforma/ajustes">Ver mis ajustes</a>
+                <a href="/plataforma">Volver</a>
               </Button>
             </CardContent>
           </Card>

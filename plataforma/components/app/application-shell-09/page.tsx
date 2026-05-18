@@ -182,7 +182,6 @@ export default function ApplicationShell09({
 
   const supportItems = React.useMemo(
     () => [
-      { href: "/plataforma/ajustes", label: "Ajustes", icon: SettingsIcon },
       ...(isAdmin
         ? [
             { href: "/plataforma/usuarios", label: "Usuarios", icon: UsersIcon },
