@@ -44,6 +44,8 @@ export default function Page() {
   const [instagram, setInstagram] = React.useState("");
   const [facebook, setFacebook] = React.useState("");
 
+  const avatarFileInputRef = React.useRef<HTMLInputElement | null>(null);
+
   React.useEffect(() => {
     let isAlive = true;
 
@@ -146,6 +148,68 @@ export default function Page() {
     userId,
   ]);
 
+  const onUploadAvatarFile = React.useCallback(
+    async (file: File) => {
+      if (!userId) {
+        setSaveError("Inicia sesión para subir tu avatar.");
+        return;
+      }
+
+      const isPng = file.type === "image/png";
+      const isJpeg = file.type === "image/jpeg";
+      if (!isPng && !isJpeg) {
+        setSaveError("Solo se permiten imágenes PNG o JPG.");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setSaveError("La imagen es muy pesada. Máximo 5MB.");
+        return;
+      }
+
+      setIsSaving(true);
+      setSaveError(null);
+      setSaveSuccess(null);
+      try {
+        const supabase = createClient();
+        const ext = isPng ? "png" : "jpg";
+        const objectPath = `${userId}/avatar-${Date.now()}.${ext}`;
+
+        const upload = await supabase.storage
+          .from("avatars")
+          .upload(objectPath, file, {
+            cacheControl: "3600",
+            upsert: true,
+            contentType: file.type,
+          });
+
+        if (upload.error) throw new Error(upload.error.message);
+
+        const publicUrl = supabase.storage
+          .from("avatars")
+          .getPublicUrl(objectPath).data.publicUrl;
+
+        if (!publicUrl) throw new Error("No se pudo obtener el URL del avatar.");
+
+        setAvatarUrl(publicUrl);
+
+        const { error } = await supabase
+          .from("profiles")
+          .update({ avatar_url: publicUrl })
+          .eq("id", userId);
+
+        if (error) throw new Error(error.message);
+
+        setSaveSuccess("Avatar actualizado.");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Error desconocido";
+        setSaveError(message);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [userId],
+  );
+
   return (
     <ApplicationShell09 title="Ajustes" subtitle="Configuración">
       <div className="mx-auto w-full max-w-5xl">
@@ -226,6 +290,26 @@ export default function Page() {
                       ) : null}
                     </div>
                     <div className="flex items-center gap-2">
+                        <input
+                          ref={avatarFileInputRef}
+                          type="file"
+                          accept="image/png,image/jpeg,.png,.jpg,.jpeg"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] ?? null;
+                            if (!file) return;
+                            void onUploadAvatarFile(file);
+                            e.target.value = "";
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => avatarFileInputRef.current?.click()}
+                          disabled={isSaving || isLoading || !userId}
+                        >
+                          Subir PNG/JPG
+                        </Button>
                       <Button
                         type="button"
                         variant="outline"
