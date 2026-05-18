@@ -131,6 +131,8 @@ function normalizeEvent(record: Record<string, unknown>): EventItem {
     parseDate(
       record["fecha"] ??
         record["date"] ??
+        record["starts_at"] ??
+        record["startsAt"] ??
         record["fecha_inicio"] ??
         record["start_date"] ??
         record["start_at"] ??
