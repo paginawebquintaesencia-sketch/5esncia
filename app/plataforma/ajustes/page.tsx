@@ -34,11 +34,8 @@ type ProfileRow = {
   art_type?: string | null;
   avatar_url?: string | null;
   phone?: string | null;
-  website?: string | null;
   instagram?: string | null;
   facebook?: string | null;
-  tiktok?: string | null;
-  youtube?: string | null;
 };
 
 export default function Page() {
@@ -58,11 +55,8 @@ export default function Page() {
   const [artType, setArtType] = React.useState("");
   const [avatarUrl, setAvatarUrl] = React.useState("");
   const [phone, setPhone] = React.useState("");
-  const [website, setWebsite] = React.useState("");
   const [instagram, setInstagram] = React.useState("");
   const [facebook, setFacebook] = React.useState("");
-  const [tiktok, setTiktok] = React.useState("");
-  const [youtube, setYoutube] = React.useState("");
 
   React.useEffect(() => {
     let isAlive = true;
@@ -103,11 +97,8 @@ export default function Page() {
         setArtType(row?.art_type ?? "");
         setAvatarUrl(row?.avatar_url ?? "");
         setPhone(row?.phone ?? "");
-        setWebsite(row?.website ?? "");
         setInstagram(row?.instagram ?? "");
         setFacebook(row?.facebook ?? "");
-        setTiktok(row?.tiktok ?? "");
-        setYoutube(row?.youtube ?? "");
       } finally {
         if (!isAlive) return;
         setIsLoading(false);
@@ -156,11 +147,8 @@ export default function Page() {
           art_type: artType.trim() || null,
           avatar_url: avatarUrl.trim() || null,
           phone: phone.trim() || null,
-          website: website.trim() || null,
           instagram: instagram.trim() || null,
           facebook: facebook.trim() || null,
-          tiktok: tiktok.trim() || null,
-          youtube: youtube.trim() || null,
         })
         .eq("id", userId);
 
@@ -191,10 +179,7 @@ export default function Page() {
     instagram,
     nickname,
     phone,
-    tiktok,
     userId,
-    website,
-    youtube,
   ]);
 
   return (
@@ -274,24 +259,12 @@ export default function Page() {
                     <Input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} />
                   </div>
                   <div className="grid gap-2">
-                    <div className="text-sm font-medium text-foreground">Sitio web</div>
-                    <Input value={website} onChange={(e) => setWebsite(e.target.value)} />
-                  </div>
-                  <div className="grid gap-2">
                     <div className="text-sm font-medium text-foreground">Instagram</div>
                     <Input value={instagram} onChange={(e) => setInstagram(e.target.value)} />
                   </div>
                   <div className="grid gap-2">
                     <div className="text-sm font-medium text-foreground">Facebook</div>
                     <Input value={facebook} onChange={(e) => setFacebook(e.target.value)} />
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="text-sm font-medium text-foreground">TikTok</div>
-                    <Input value={tiktok} onChange={(e) => setTiktok(e.target.value)} />
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="text-sm font-medium text-foreground">YouTube</div>
-                    <Input value={youtube} onChange={(e) => setYoutube(e.target.value)} />
                   </div>
                 </div>
 
