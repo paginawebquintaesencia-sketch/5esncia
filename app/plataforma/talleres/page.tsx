@@ -236,12 +236,12 @@ export default function Page() {
       const [enrolledWorkshops, savedWorkshops] = await Promise.all([
         tryFetchWorkshops({
           supabase,
-          tableCandidates: ["talleres", "workshops"],
+          tableCandidates: ["talleres", "workshops", "events", "eventos"],
           ids: enrolledIds,
         }),
         tryFetchWorkshops({
           supabase,
-          tableCandidates: ["talleres", "workshops"],
+          tableCandidates: ["talleres", "workshops", "events", "eventos"],
           ids: savedIds,
         }),
       ]);

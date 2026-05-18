@@ -280,7 +280,7 @@ export default function Page() {
 
       const items = await tryFetchAllEvents({
         supabase,
-        tableCandidates: ["events", "eventos", "talleres", "workshops"],
+        tableCandidates: ["talleres", "workshops", "events", "eventos"],
       });
 
       if (!isAlive) return;
