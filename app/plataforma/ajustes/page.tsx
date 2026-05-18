@@ -5,6 +5,7 @@ import * as React from "react";
 import { createClient } from "@/lib/client";
 import ApplicationShell09 from "@/plataforma/components/app/application-shell-09/page";
 import { Button } from "@/plataforma/components/ui/button";
+import { Input } from "@/plataforma/components/ui/input";
 import {
   Card,
   CardContent,
@@ -24,12 +25,44 @@ function roleLabel(isAdmin: boolean) {
   return isAdmin ? "Administrador" : "Usuario";
 }
 
+type ProfileRow = {
+  id: string;
+  email?: string | null;
+  role?: string | null;
+  full_name?: string | null;
+  nickname?: string | null;
+  art_type?: string | null;
+  avatar_url?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  tiktok?: string | null;
+  youtube?: string | null;
+};
+
 export default function Page() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [email, setEmail] = React.useState<string | null>(null);
   const [userId, setUserId] = React.useState<string | null>(null);
   const [role, setRole] = React.useState<string | null>(null);
   const [roleFromDb, setRoleFromDb] = React.useState<string | null>(null);
+
+  const [profile, setProfile] = React.useState<ProfileRow | null>(null);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = React.useState<string | null>(null);
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  const [fullName, setFullName] = React.useState("");
+  const [nickname, setNickname] = React.useState("");
+  const [artType, setArtType] = React.useState("");
+  const [avatarUrl, setAvatarUrl] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [website, setWebsite] = React.useState("");
+  const [instagram, setInstagram] = React.useState("");
+  const [facebook, setFacebook] = React.useState("");
+  const [tiktok, setTiktok] = React.useState("");
+  const [youtube, setYoutube] = React.useState("");
 
   React.useEffect(() => {
     let isAlive = true;
@@ -47,20 +80,34 @@ export default function Page() {
 
         if (!user) {
           setRoleFromDb(null);
+          setProfile(null);
           return;
         }
 
-        const { data: roleRows } = await supabase
+        const { data: profileRows } = await supabase
           .from("profiles")
-          .select("role")
+          .select("*")
           .eq("id", user.id)
           .limit(1);
-        const rawRole =
-          Array.isArray(roleRows) && roleRows[0]
-            ? (roleRows[0] as { role?: unknown }).role
+        const row =
+          Array.isArray(profileRows) && profileRows[0]
+            ? (profileRows[0] as unknown as ProfileRow)
             : null;
+        const rawRole = row?.role ?? null;
         if (!isAlive) return;
         setRoleFromDb(normalizeRole(rawRole) ?? null);
+        setProfile(row);
+
+        setFullName(row?.full_name ?? user.user_metadata?.full_name ?? "");
+        setNickname(row?.nickname ?? "");
+        setArtType(row?.art_type ?? "");
+        setAvatarUrl(row?.avatar_url ?? "");
+        setPhone(row?.phone ?? "");
+        setWebsite(row?.website ?? "");
+        setInstagram(row?.instagram ?? "");
+        setFacebook(row?.facebook ?? "");
+        setTiktok(row?.tiktok ?? "");
+        setYoutube(row?.youtube ?? "");
       } finally {
         if (!isAlive) return;
         setIsLoading(false);
@@ -90,6 +137,66 @@ export default function Page() {
     roleCandidate === "administrador" ||
     roleCandidate === "superadmin";
 
+  const onSaveProfile = React.useCallback(async () => {
+    if (!userId) {
+      setSaveError("Inicia sesión para guardar tu perfil.");
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: fullName.trim() || null,
+          nickname: nickname.trim() || null,
+          art_type: artType.trim() || null,
+          avatar_url: avatarUrl.trim() || null,
+          phone: phone.trim() || null,
+          website: website.trim() || null,
+          instagram: instagram.trim() || null,
+          facebook: facebook.trim() || null,
+          tiktok: tiktok.trim() || null,
+          youtube: youtube.trim() || null,
+        })
+        .eq("id", userId);
+
+      if (error) throw new Error(error.message);
+
+      setSaveSuccess("Perfil actualizado.");
+      const { data: profileRows } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .limit(1);
+      const nextRow =
+        Array.isArray(profileRows) && profileRows[0]
+          ? (profileRows[0] as unknown as ProfileRow)
+          : null;
+      setProfile(nextRow);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error desconocido";
+      setSaveError(message);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [
+    artType,
+    avatarUrl,
+    facebook,
+    fullName,
+    instagram,
+    nickname,
+    phone,
+    tiktok,
+    userId,
+    website,
+    youtube,
+  ]);
+
   return (
     <ApplicationShell09 title="Ajustes" subtitle="Configuración">
       <div className="grid gap-6">
@@ -111,6 +218,102 @@ export default function Page() {
               <span className="text-muted-foreground">User ID</span>
               <span className="font-mono text-xs">{userId ?? (isLoading ? "…" : "—")}</span>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Perfil</CardTitle>
+            <CardDescription>
+              Configura tu información pública y de contacto.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            {!userId && !isLoading ? (
+              <div className="text-sm text-muted-foreground">
+                Inicia sesión para editar tu perfil.
+              </div>
+            ) : (
+              <>
+                {avatarUrl.trim() ? (
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={avatarUrl.trim()}
+                      alt="Avatar"
+                      className="h-14 w-14 rounded-full object-cover ring-1 ring-foreground/10"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="text-sm text-muted-foreground">
+                      Vista previa del avatar
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">Nombre</div>
+                    <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">Usuario (nickname)</div>
+                    <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">Tipo de arte</div>
+                    <Input value={artType} onChange={(e) => setArtType(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">Celular</div>
+                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">Avatar (URL)</div>
+                    <Input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">Sitio web</div>
+                    <Input value={website} onChange={(e) => setWebsite(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">Instagram</div>
+                    <Input value={instagram} onChange={(e) => setInstagram(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">Facebook</div>
+                    <Input value={facebook} onChange={(e) => setFacebook(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">TikTok</div>
+                    <Input value={tiktok} onChange={(e) => setTiktok(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="text-sm font-medium text-foreground">YouTube</div>
+                    <Input value={youtube} onChange={(e) => setYoutube(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button onClick={onSaveProfile} disabled={isSaving || isLoading || !userId}>
+                    {isSaving ? "Guardando..." : "Guardar cambios"}
+                  </Button>
+                  {profile?.id ? (
+                    <div className="text-xs text-muted-foreground">
+                      Perfil: {profile.id}
+                    </div>
+                  ) : null}
+                </div>
+
+                {saveError ? (
+                  <div className="text-sm text-muted-foreground">{saveError}</div>
+                ) : null}
+                {saveSuccess ? (
+                  <div className="text-sm text-muted-foreground">{saveSuccess}</div>
+                ) : null}
+              </>
+            )}
           </CardContent>
         </Card>
 
