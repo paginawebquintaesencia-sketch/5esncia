@@ -1,0 +1,9 @@
+colores
+#222C47
+#EAEAEA
+#FC5E33
+#DD43A8
+#AB5CC9
+#449EEE
+
+
