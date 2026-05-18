@@ -362,9 +362,8 @@ export default function Page() {
                         />
                       ) : null}
                     </div>
-                      <div className="text-sm text-muted-foreground">
-                        Se genera automáticamente con tu correo (Gravatar).
-                      </div>
+                    <div className="text-sm text-muted-foreground">
+                      Se genera automáticamente con tu correo (Gravatar).
                     </div>
                   </div>
                 </div>
