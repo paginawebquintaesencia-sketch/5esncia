@@ -197,10 +197,11 @@ async function tryFetchAllEvents({
     const { data, error } = await supabase.from(table).select("*").limit(500);
     if (error) continue;
     if (!Array.isArray(data)) continue;
-    return data
+    const items = data
       .filter((row): row is Record<string, unknown> => Boolean(row))
       .map(normalizeEvent)
       .filter((item) => item.dateKey);
+    if (items.length) return items;
   }
   return [];
 }

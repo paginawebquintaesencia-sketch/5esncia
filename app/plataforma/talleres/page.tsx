@@ -117,6 +117,7 @@ async function tryFetchWorkshops({
     const { data, error } = await supabase.from(table).select("*").in("id", ids);
     if (error) continue;
     if (!Array.isArray(data)) continue;
+    if (!data.length) continue;
 
     return data
       .filter((row): row is Record<string, unknown> => Boolean(row))
