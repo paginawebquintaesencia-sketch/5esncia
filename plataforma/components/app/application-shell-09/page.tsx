@@ -197,7 +197,7 @@ export default function ApplicationShell09({
       <SidebarProvider>
         <Sidebar>
           <SidebarContent>
-            <div className="mx-2 mt-2 rounded-2xl border border-white/15 bg-[#FC5E33]/80 px-4 py-5 text-white/90">
+            <div className="mx-2 mt-2 rounded-2xl border border-white/15 bg-[#FC5E33] px-4 py-5 text-white/90">
               <div className="flex flex-col items-center gap-3 text-center">
                 <div className="flex size-14 items-center justify-center rounded-full border border-white/25 bg-white/10 text-sm font-semibold">
                   {initials}
@@ -265,7 +265,7 @@ export default function ApplicationShell09({
 
           <SidebarFooter>
             <SidebarSeparator className="mx-4" />
-            <SidebarGroup className="w-full overflow-hidden rounded-2xl border border-white/15 bg-[#DD43A8]/80 text-white/90 [&_[data-sidebar=group-label]]:!text-white/85 [&_[data-sidebar=menu-button]]:!text-white/95 [&_[data-sidebar=menu-button]]:hover:!text-white [&_[data-sidebar=menu-button]]:hover:bg-white/12 [&_[data-sidebar=menu-button][data-active=true]]:!text-white [&_[data-sidebar=menu-button][data-active=true]]:bg-white/18 [&_[data-sidebar=menu-button]_svg]:!text-white/95">
+            <SidebarGroup className="w-full overflow-hidden rounded-2xl border border-white/15 bg-[#DD43A8] text-white/90 [&_[data-sidebar=group-label]]:!text-white/85 [&_[data-sidebar=menu-button]]:!text-white/95 [&_[data-sidebar=menu-button]]:hover:!text-white [&_[data-sidebar=menu-button]]:hover:bg-white/12 [&_[data-sidebar=menu-button][data-active=true]]:!text-white [&_[data-sidebar=menu-button][data-active=true]]:bg-white/18 [&_[data-sidebar=menu-button]_svg]:!text-white/95">
               <SidebarGroupLabel>Soporte</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
