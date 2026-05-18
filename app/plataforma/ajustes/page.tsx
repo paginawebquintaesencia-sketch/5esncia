@@ -21,10 +21,6 @@ function normalizeRole(value: unknown) {
   return trimmed.toLowerCase();
 }
 
-function roleLabel(isAdmin: boolean) {
-  return isAdmin ? "Administrador" : "Usuario";
-}
-
 type ProfileRow = {
   id: string;
   email?: string | null;
@@ -40,7 +36,6 @@ type ProfileRow = {
 
 export default function Page() {
   const [isLoading, setIsLoading] = React.useState(true);
-  const [email, setEmail] = React.useState<string | null>(null);
   const [userId, setUserId] = React.useState<string | null>(null);
   const [role, setRole] = React.useState<string | null>(null);
   const [roleFromDb, setRoleFromDb] = React.useState<string | null>(null);
@@ -68,7 +63,6 @@ export default function Page() {
         const { data } = await supabase.auth.getUser();
         const user = data.user ?? null;
         if (!isAlive) return;
-        setEmail(user?.email ?? null);
         setUserId(user?.id ?? null);
         setRole(normalizeRole(user?.user_metadata?.role) ?? null);
 
@@ -113,13 +107,13 @@ export default function Page() {
 
   const isAdminEmail = React.useMemo(() => {
     const raw = process.env.NEXT_PUBLIC_ADMIN_EMAILS;
-    if (!raw || !email) return false;
+    if (!raw) return false;
     const list = raw
       .split(",")
       .map((value) => value.trim().toLowerCase())
       .filter(Boolean);
-    return list.includes(email.toLowerCase());
-  }, [email]);
+    return list.includes((profile?.email ?? "").toLowerCase());
+  }, [profile?.email]);
 
   const roleCandidate = roleFromDb ?? role;
   const isAdmin =
@@ -187,27 +181,6 @@ export default function Page() {
       <div className="grid gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Cuenta</CardTitle>
-            <CardDescription>Datos básicos de tu sesión</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-2 text-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-muted-foreground">Email</span>
-              <span className="font-medium">{email ?? (isLoading ? "Cargando..." : "—")}</span>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-muted-foreground">Rol</span>
-              <span className="font-medium">{roleLabel(isAdmin)}</span>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-muted-foreground">User ID</span>
-              <span className="font-mono text-xs">{userId ?? (isLoading ? "…" : "—")}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
             <CardTitle>Perfil</CardTitle>
             <CardDescription>
               Configura tu información pública y de contacto.
@@ -272,11 +245,6 @@ export default function Page() {
                   <Button onClick={onSaveProfile} disabled={isSaving || isLoading || !userId}>
                     {isSaving ? "Guardando..." : "Guardar cambios"}
                   </Button>
-                  {profile?.id ? (
-                    <div className="text-xs text-muted-foreground">
-                      Perfil: {profile.id}
-                    </div>
-                  ) : null}
                 </div>
 
                 {saveError ? (
@@ -289,34 +257,6 @@ export default function Page() {
             )}
           </CardContent>
         </Card>
-
-        {isAdmin ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Administración</CardTitle>
-              <CardDescription>
-                Tu cuenta tiene permisos para agregar contenido en la plataforma.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild>
-                <a href="/plataforma/panel">Ir al panel</a>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Permisos</CardTitle>
-              <CardDescription>
-                Para agregar contenido necesitas el rol de Administrador.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Pide a un administrador que te habilite el rol.
-            </CardContent>
-          </Card>
-        )}
       </div>
     </ApplicationShell09>
   );
