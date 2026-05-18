@@ -2,7 +2,7 @@
 
 import { createClient } from "../../lib/client";
 import { useRouter } from "next/navigation";
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 
 function Field({
   label,
@@ -45,9 +45,33 @@ export default function LoginAndRegister() {
   const [registerConfirm, setRegisterConfirm] = useState("");
   const [newsOptIn, setNewsOptIn] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOauthLoading, setIsOauthLoading] = useState(false);
   const [isHelping, setIsHelping] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [successText, setSuccessText] = useState("");
+
+  useEffect(() => {
+    let isAlive = true;
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (!isAlive) return;
+      if (data.user) {
+        router.replace("/plataforma");
+        router.refresh();
+      }
+    });
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) return;
+      router.replace("/plataforma");
+      router.refresh();
+    });
+
+    return () => {
+      isAlive = false;
+      data.subscription.unsubscribe();
+    };
+  }, [router, supabase]);
 
   const canRegister =
     Boolean(name.trim()) &&
@@ -107,6 +131,24 @@ export default function LoginAndRegister() {
       setSuccessText("Te enviamos un correo para restablecer tu contraseña.");
     } finally {
       setIsHelping(false);
+    }
+  };
+
+  const onGoogle = async () => {
+    setErrorText("");
+    setSuccessText("");
+    setIsOauthLoading(true);
+    try {
+      const redirectTo = `${window.location.origin}/entrar`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo },
+      });
+      if (error) {
+        setErrorText(error.message);
+      }
+    } finally {
+      setIsOauthLoading(false);
     }
   };
 
@@ -325,17 +367,11 @@ export default function LoginAndRegister() {
 
             <button
               type="button"
-              disabled
+              onClick={onGoogle}
+              disabled={isOauthLoading}
               className="inline-flex h-11 items-center justify-center rounded-xl border border-black/10 bg-white text-sm font-extrabold text-black transition-colors hover:bg-black/[0.02]"
             >
-              Continuar con Google
-            </button>
-            <button
-              type="button"
-              disabled
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-black/10 bg-white text-sm font-extrabold text-black transition-colors hover:bg-black/[0.02]"
-            >
-              Continuar con Microsoft
+              {isOauthLoading ? "Conectando..." : "Continuar con Google"}
             </button>
 
             {errorText ? (
